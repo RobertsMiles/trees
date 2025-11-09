@@ -1,14 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// given two trees, a, and b, are they isomorphic?
-bool areIsomorphic(bool **a, bool **b)
+// max number of vertices
+const int N = 999;
+
+
+
+// given two trees, a and b, are they isomorphic?
+bool areIsomorphic(bool a[N][N], bool b[N][N])
 {
 	return false;
 }
 
 // return the number of possible labellings for a given tree
-int numLabellings(bool **tree, int n)
+int numLabellings(bool tree[N][N], int n)
 {
 	int labellings, i, j;
 	bool graceful;
@@ -82,11 +87,9 @@ int main()
 {
 	int i, j, n;
 
-	n = 6; // number of vertices
+	n = 6; // number of vertices, must be less/equal to N
 
-	bool tree[n][n];
-
-
+	bool tree[N][N];
 
 	// initialize tree
 	// [lower][higher]
