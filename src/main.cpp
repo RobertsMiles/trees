@@ -1,17 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// max number of vertices
+// max number of vertices (lazy)
 const int N = 999;
-
-
-
-
-struct Tree
-{
-	bool arr[N][N];
-	int size;
-};
 
 
 // TODO
@@ -115,7 +106,7 @@ void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
 		// loop through potential labels
 		for (j=0; j < n; j++)
 		{
-			if (!label[j])
+			if (!label[j] || j==pruefer[i])
 				continue;
 
 			// check if label is not in remaining sequence
@@ -130,7 +121,7 @@ void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
 			}
 			if (valid)
 			{
-				//cout << pruefer[i] << "-" << j << " ";
+				//cout << pruefer[i]+1 << "-" << j+1 << " ";
 				if (pruefer[i] > j)
 					tree[j][pruefer[i]] = true;
 				else
@@ -151,7 +142,7 @@ void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
 				last = j;
 			else
 			{
-				//cout << last << "-" << j;
+				//cout << last+1 << "-" << j+1;
 				tree[last][j] = true;
 				break;
 			}
@@ -187,39 +178,71 @@ void printTree(bool tree[N][N], int n)
 	}
 }
 
+bool permutePruefer(int *pruefer, int n)
+{
+	int maxNum, num, i;
+
+	/*
+	// print pruefer
+	for (i=0; i < n-2; i++)
+		cout << pruefer[i] << " ";
+	cout << endl;
+	*/
+
+	// convert pruefer into single int
+	num = 0;
+	for (i=0; i < n-2; i++)
+		num += pruefer[i] * pow(n,i);
+
+	// check if input is last permutation
+	maxNum = 0;
+	for (i=0; i < n-2; i++)
+		maxNum += (n-1) * pow(n,i);
+	if (num >= maxNum)
+		return false;
+
+	// incriment int
+	num++;
+
+	// convert new int back into pruefer
+	for (i=0; i < n-2; i++)
+	{
+		pruefer[i] = num % n;
+		num /= n;
+	}
+
+	return true;
+}
+
 
 int main()
 {
 	int i, j, n;
+	bool newPruefer;
 
-	/*
-	n = 6; // number of vertices, must be less/equal to N
-
-	bool tree[N][N];
-
-	// initialize tree
-	// [lower][higher]
-	for (i=0; i < n; i++)
-		for (j=0; j < n; j++)
-			tree[i][j] = false;
-	tree[0][3] = true;
-	tree[1][3] = true;
-	tree[2][3] = true;
-	tree[3][4] = true;
-	tree[4][5] = true;
-	*/
+	n = 8; // len pruefer + 2; must be less/equal to N
+	//int pruefer[] = {0,1,0,2,2,4}; // [0,n-1]
+	int pruefer[n-2] = {0};
+	
+	newPruefer = true;
+	while(newPruefer)
+	{
+		bool tree[N][N];
+		treeFromPruefer(tree, n, pruefer);
 
 
-	n = 6; // len pruefer + 2
-	int pruefer[] = {3,3,3,4}; 
+		for (i=0; i < n-2; i++)
+			cout << pruefer[i] << " ";
+		for (i=0; i < n; i++)
+			for (j=0; j < n; j++)
+			{
+				if (tree[i][j])
+					cout << i << "-" << j << " ";
+			}
+		cout << "labellings: " << numLabellings(tree, n) << endl;
 
-	bool tree[N][N];
-	treeFromPruefer(tree, n, pruefer);
-
-	printTree(tree, n);
-
-	// loop through every permutation
-	//cout << "# labellings: " << numLabellings(tree, n) << endl;
+		newPruefer = permutePruefer(pruefer, n);
+	}
 
 	return 0;
 }
