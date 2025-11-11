@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 	}
 	n = atoi(argv[1]); // len pruefer + 2; must be less/equal to N
 	//int pruefer[] = {0,1,0,2,2,4}; // [0,n-1]
-	int pruefer[n-2] = {0};
+	int pruefer[n-2] = {0};// = {0,1,0,2,2,4};
 	
 	newPruefer = true;
 	while(newPruefer)
@@ -236,16 +236,18 @@ int main(int argc, char **argv)
 		bool tree[N][N];
 		treeFromPruefer(tree, n, pruefer);
 
-
-		for (i=0; i < n-2; i++)
-			cout << pruefer[i] << " ";
-		for (i=0; i < n; i++)
-			for (j=0; j < n; j++)
-			{
-				if (tree[i][j])
-					cout << i << "-" << j << " ";
-			}
-		cout << "labellings: " << numLabellings(tree, n) << endl;
+		if (numLabellings(tree, n))
+		{
+			for (i=0; i < n-2; i++)
+				cout << pruefer[i] << " ";
+			for (i=0; i < n; i++)
+				for (j=0; j < n; j++)
+				{
+					if (tree[i][j])
+						cout << i << "-" << j << " ";
+				}
+			cout << "labellings: " << numLabellings(tree, n) << endl;
+		}
 
 		newPruefer = permutePruefer(pruefer, n);
 	}
