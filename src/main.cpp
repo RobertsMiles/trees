@@ -215,12 +215,18 @@ bool permutePruefer(int *pruefer, int n)
 }
 
 
-int main()
+int main(int argc, char **argv)
 {
 	int i, j, n;
 	bool newPruefer;
 
-	n = 8; // len pruefer + 2; must be less/equal to N
+
+	if (argc != 2)
+	{
+		cout << "please enter number of vertices" << endl;
+		exit(1);
+	}
+	n = atoi(argv[1]); // len pruefer + 2; must be less/equal to N
 	//int pruefer[] = {0,1,0,2,2,4}; // [0,n-1]
 	int pruefer[n-2] = {0};
 	
