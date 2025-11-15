@@ -234,10 +234,14 @@ int main(int argc, char **argv)
 	while(newPruefer)
 	{
 		bool tree[N][N];
+		for (i=0; i < n; i++)
+			for (j=0; j < n; j++)
+				tree[i][j] = false;
+
 		treeFromPruefer(tree, n, pruefer);
 
-		if (numLabellings(tree, n))
-		{
+		//if (numLabellings(tree, n))
+		//{
 			for (i=0; i < n-2; i++)
 				cout << pruefer[i] << " ";
 			for (i=0; i < n; i++)
@@ -247,7 +251,7 @@ int main(int argc, char **argv)
 						cout << i << "-" << j << " ";
 				}
 			cout << "labellings: " << numLabellings(tree, n) << endl;
-		}
+		//}
 
 		newPruefer = permutePruefer(pruefer, n);
 	}
