@@ -18,12 +18,11 @@ void generateTrees(int n)
 
 }
 
-// return the number of possible labellings for a given tree
-int numLabellings(bool tree[N][N], int n)
+void generateLabels(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
 {
-	int labellings, i, j;
+	int numLabels, i, j;
 	bool graceful;
-		
+
 	int label[n]; // [0,|E(tree)|] => [0,n-1]
 	bool diff[n]; // [1, n-1], so disregard diff[0]
 	
@@ -31,7 +30,7 @@ int numLabellings(bool tree[N][N], int n)
 	for (i=0; i < n; i++)
 		label[i] = i;
 	
-	labellings = 0;
+	numLabels = 0;
 	do
 	{
 		// print label
@@ -66,34 +65,46 @@ int numLabellings(bool tree[N][N], int n)
 		}
 
 		if (graceful)
-			labellings++;
+			numLabels++;
 
 		// print graceful tree
-		/*
 		if (graceful)
 		{
+			set<set<int>> gLabel;
+			//cout << "    ";
 			for (i=0; i < n; i++)
 			{
 				for (j=0; j < n; j++)
 				{
 					if (tree[i][j])
-						cout << label[i] << "--" << label[j] << " ";	
+					{
+						//cout << label[i] << "-" << label[j] << " ";	
+						set<int> pair;
+						pair.insert(label[i]);
+						pair.insert(label[j]);
+						gLabel.insert(move(pair));
+					}
 				}
 			}
-			cout << endl;
+			//cout << endl;
+			gLabels.insert(move(gLabel));
 		}
-		*/
 	}
 	while (next_permutation(label, label+n));
 
-	return labellings;
+	// I highly doubt I have disproved an unsolved conjecture in graph theory,
+	// this should never happen
+	if (!numLabels)
+	{
+		cout << "WARNING, SOMETHING WRONG!!!" << endl;
+		exit(2);
+	}
 }
 
 // i've elected for the code to range from [0,n-1] rather than [1,n]
 void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
 {
 	int i, j, k, last;
-	int considered;
 	bool valid;
 
 	bool label[n];
@@ -230,6 +241,8 @@ int main(int argc, char **argv)
 	//int pruefer[] = {0,1,0,2,2,4}; // [0,n-1]
 	int pruefer[n-2] = {0};// = {0,1,0,2,2,4};
 	
+	set<set<set<int>>> gLabels;
+
 	newPruefer = true;
 	while(newPruefer)
 	{
@@ -240,21 +253,44 @@ int main(int argc, char **argv)
 
 		treeFromPruefer(tree, n, pruefer);
 
-		//if (numLabellings(tree, n))
-		//{
-			for (i=0; i < n-2; i++)
-				cout << pruefer[i] << " ";
-			for (i=0; i < n; i++)
-				for (j=0; j < n; j++)
-				{
-					if (tree[i][j])
-						cout << i << "-" << j << " ";
-				}
-			cout << "labellings: " << numLabellings(tree, n) << endl;
-		//}
+		/*
+		for (i=0; i < n-2; i++)
+			cout << pruefer[i] << " ";
+		cout << "  ";
+		for (i=0; i < n; i++)
+			for (j=0; j < n; j++)
+			{
+				if (tree[i][j])
+					cout << i << "-" << j << " ";
+			}
+		*/
+		//cout << "  ";
+		//cout << "g-labels: " << generateLabels(tree, n) << endl;
+		//cout << endl;
+		generateLabels(tree, n, gLabels);
+		//cout << endl << endl;
 
 		newPruefer = permutePruefer(pruefer, n);
 	}
 
+	/*
+	cout << "g-labels: " << endl;
+	for (auto gLabel : gLabels)
+	{
+		for (auto edge : gLabel)
+		{
+			for (auto vertex : edge)
+				cout << vertex << " ";
+			cout << "    ";
+		}
+		cout << endl;
+	}
+	cout << endl;
+	*/
+
+	cout << "num vertices: " << n << endl;
+	cout << "num trees:    " << pow(n, n-2) << endl;
+	cout << "num g-labels: " << gLabels.size() << endl;
+	
 	return 0;
 }
