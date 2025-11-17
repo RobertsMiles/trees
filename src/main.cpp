@@ -1,20 +1,63 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// max number of vertices (lazy)
-const int N = 999;
+// max number of vertices (I am lazy)
+const int N = 32;
 
 
-// TODO
-// given two trees, a and b, are they isomorphic?
-bool areIsomorphic(bool a[N][N], bool b[N][N])
-{
-	return false;
-}
+void addIfGraceful(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
+{	
+	int i, j;
+	bool graceful;
 
-// generates every possible tree on n vertices
-void generateTrees(int n)
-{
+	//int label[n]; // [0,|E(tree)|] => [0,n-1]
+	bool diff[n]; // [1, n-1], so disregard diff[0]
+	
+	// reset diff
+	for (i=0; i < n; i++)
+		diff[i] = false;
+
+	// traverse tree
+	graceful = true;
+	for (i=0; i < n; i++) 
+	{
+		for (j=0; j < n; j++)
+		{
+			if (tree[i][j])
+			{
+				if (diff[abs(i-j)])
+				{
+					graceful = false;
+					break;
+				}
+				diff[abs(i-j)] = true;
+			}
+		}
+		if (!graceful)
+			break;
+	}
+
+	if (graceful)
+	{
+		set<set<int>> gLabel;
+		//cout << "    ";
+		for (i=0; i < n; i++)
+		{
+			for (j=0; j < n; j++)
+			{
+				if (tree[i][j])
+				{
+					//cout << label[i] << "-" << label[j] << " ";	
+					set<int> pair;
+					pair.insert(i);
+					pair.insert(j);
+					gLabel.insert(move(pair));
+				}
+			}
+		}
+		//cout << endl;
+		gLabels.insert(move(gLabel));
+	}
 
 }
 
@@ -67,7 +110,7 @@ void generateLabels(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
 		if (graceful)
 			numLabels++;
 
-		// print graceful tree
+		// count graceful tree
 		if (graceful)
 		{
 			set<set<int>> gLabel;
@@ -191,7 +234,8 @@ void printTree(bool tree[N][N], int n)
 
 bool permutePruefer(int *pruefer, int n)
 {
-	int maxNum, num, i;
+	int num, i;
+	unsigned long long maxNum;
 
 	/*
 	// print pruefer
@@ -209,6 +253,7 @@ bool permutePruefer(int *pruefer, int n)
 	maxNum = 0;
 	for (i=0; i < n-2; i++)
 		maxNum += (n-1) * pow(n,i);
+	//cout << "num: " << num << " maxnum: " << maxNum << endl;
 	if (num >= maxNum)
 		return false;
 
@@ -229,64 +274,37 @@ bool permutePruefer(int *pruefer, int n)
 int main(int argc, char **argv)
 {
 	int i, j, n;
-	bool newPruefer;
-
-
+	set<set<set<int>>> gLabels;
+	
+	// user gives number of vertices (n)
 	if (argc != 2)
 	{
 		cout << "please enter number of vertices" << endl;
 		exit(1);
 	}
 	n = atoi(argv[1]); // len pruefer + 2; must be less/equal to N
-	//int pruefer[] = {0,1,0,2,2,4}; // [0,n-1]
-	int pruefer[n-2] = {0};// = {0,1,0,2,2,4};
 	
-	set<set<set<int>>> gLabels;
-
-	newPruefer = true;
-	while(newPruefer)
+	int pruefer[n-2] = {0};
+	while(true)
 	{
+		/*
+		for (auto num : pruefer)
+			cout << num << " ";
+		cout << endl;
+		*/
+
 		bool tree[N][N];
 		for (i=0; i < n; i++)
 			for (j=0; j < n; j++)
 				tree[i][j] = false;
 
 		treeFromPruefer(tree, n, pruefer);
-
-		/*
-		for (i=0; i < n-2; i++)
-			cout << pruefer[i] << " ";
-		cout << "  ";
-		for (i=0; i < n; i++)
-			for (j=0; j < n; j++)
-			{
-				if (tree[i][j])
-					cout << i << "-" << j << " ";
-			}
-		*/
-		//cout << "  ";
-		//cout << "g-labels: " << generateLabels(tree, n) << endl;
-		//cout << endl;
-		generateLabels(tree, n, gLabels);
-		//cout << endl << endl;
-
-		newPruefer = permutePruefer(pruefer, n);
+		
+		addIfGraceful(tree, n, gLabels);
+		
+		if(!permutePruefer(pruefer, n))
+			break;
 	}
-
-	/*
-	cout << "g-labels: " << endl;
-	for (auto gLabel : gLabels)
-	{
-		for (auto edge : gLabel)
-		{
-			for (auto vertex : edge)
-				cout << vertex << " ";
-			cout << "    ";
-		}
-		cout << endl;
-	}
-	cout << endl;
-	*/
 
 	cout << "num vertices: " << n << endl;
 	cout << "num trees:    " << pow(n, n-2) << endl;
