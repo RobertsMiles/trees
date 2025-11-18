@@ -235,12 +235,12 @@ void printTree(bool tree[N][N], int n)
 bool permutePruefer(int *pruefer, int n)
 {
 	int num, i;
-	unsigned long long maxNum;
+	bool last;
 
-	/*
 	// print pruefer
+	/*
 	for (i=0; i < n-2; i++)
-		cout << pruefer[i] << " ";
+		cout << setw(2) << pruefer[i] << " ";
 	cout << endl;
 	*/
 
@@ -250,11 +250,14 @@ bool permutePruefer(int *pruefer, int n)
 		num += pruefer[i] * pow(n,i);
 
 	// check if input is last permutation
-	maxNum = 0;
+	last = true;
 	for (i=0; i < n-2; i++)
-		maxNum += (n-1) * pow(n,i);
-	//cout << "num: " << num << " maxnum: " << maxNum << endl;
-	if (num >= maxNum)
+		if (pruefer[i] != n-1)
+		{
+			last = false;
+			break;
+		}
+	if (last)
 		return false;
 
 	// incriment int
