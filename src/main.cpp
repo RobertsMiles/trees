@@ -5,33 +5,32 @@ using namespace std;
 const int N = 32;
 
 
-void addIfGraceful(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
+void addIfGraceful(map<int, set<int>> & tree, int n, set<set<set<int>>> & gLabels)
 {	
-	int i, j;
+	int i, vertexA;
 	bool graceful;
 
 	//int label[n]; // [0,|E(tree)|] => [0,n-1]
 	bool diff[n]; // [1, n-1], so disregard diff[0]
 	
 	// reset diff
+	// TODO optimize
 	for (i=0; i < n; i++)
 		diff[i] = false;
 
 	// traverse tree
 	graceful = true;
-	for (i=0; i < n; i++) 
+	for (auto pair : tree)
 	{
-		for (j=0; j < n; j++)
+		vertexA = pair.first;
+		for (auto vertexB : pair.second)
 		{
-			if (tree[i][j])
+			if (diff[vertexB - vertexA])
 			{
-				if (diff[abs(i-j)])
-				{
-					graceful = false;
-					break;
-				}
-				diff[abs(i-j)] = true;
+				graceful = false;
+				break;
 			}
+			diff[vertexB - vertexA] = true;
 		}
 		if (!graceful)
 			break;
@@ -40,25 +39,19 @@ void addIfGraceful(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
 	if (graceful)
 	{
 		set<set<int>> gLabel;
-		//cout << "    ";
-		for (i=0; i < n; i++)
+		for (auto pair : tree)
 		{
-			for (j=0; j < n; j++)
+			vertexA = pair.first;
+			for (auto vertexB : pair.second)
 			{
-				if (tree[i][j])
-				{
-					//cout << label[i] << "-" << label[j] << " ";	
-					set<int> pair;
-					pair.insert(i);
-					pair.insert(j);
-					gLabel.insert(move(pair));
-				}
+				set<int> pair;
+				pair.insert(vertexA);
+				pair.insert(vertexB);
+				gLabel.insert(move(pair));
 			}
 		}
-		//cout << endl;
 		gLabels.insert(move(gLabel));
 	}
-
 }
 
 void generateLabels(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
@@ -145,7 +138,7 @@ void generateLabels(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
 }
 
 // i've elected for the code to range from [0,n-1] rather than [1,n]
-void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
+void treeFromPruefer(map<int, set<int>> & tree, int n, int pruefer[])
 {
 	int i, j, k, last;
 	bool valid;
@@ -175,11 +168,10 @@ void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
 			}
 			if (valid)
 			{
-				//cout << pruefer[i]+1 << "-" << j+1 << " ";
 				if (pruefer[i] > j)
-					tree[j][pruefer[i]] = true;
+					tree[j].insert(pruefer[i]);
 				else
-					tree[pruefer[i]][j] = true;
+					tree[pruefer[i]].insert(j);
 				label[j] = false;
 				break;
 			}
@@ -196,42 +188,14 @@ void treeFromPruefer(bool tree[N][N], int n, int pruefer[])
 				last = j;
 			else
 			{
-				//cout << last+1 << "-" << j+1;
-				tree[last][j] = true;
+				tree[last].insert(j);
 				break;
 			}
 		}
 	}
 }
 
-void printTree(bool tree[N][N], int n)
-{
-	int i, j;
-
-	cout << "   ";
-	for(j=0; j < n; j++)
-		cout << setw(3) << j;
-	cout << endl;
-
-	cout << "   ";
-	for(j=0; j < n; j++)
-		cout << "---";
-	cout << endl;
-
-	for (i=0; i < n; i++)
-	{
-		cout << setw(2) << i << '|';
-		for (j=0; j < n; j++)
-		{
-			if (tree[i][j])
-				cout << setw(3) << "X";
-			else
-				cout << setw(3) << " ";
-		}
-		cout << endl;
-	}
-}
-
+// O(n * n**n)
 bool permutePruefer(int *pruefer, int n)
 {
 	int num, i;
@@ -276,7 +240,7 @@ bool permutePruefer(int *pruefer, int n)
 
 int main(int argc, char **argv)
 {
-	int i, j, n;
+	int n;
 	set<set<set<int>>> gLabels;
 	
 	// user gives number of vertices (n)
@@ -288,30 +252,17 @@ int main(int argc, char **argv)
 	n = atoi(argv[1]); // len pruefer + 2; must be less/equal to N
 	
 	int pruefer[n-2] = {0};
-	while(true)
+	do
 	{
-		/*
-		for (auto num : pruefer)
-			cout << num << " ";
-		cout << endl;
-		*/
-
-		bool tree[N][N];
-		for (i=0; i < n; i++)
-			for (j=0; j < n; j++)
-				tree[i][j] = false;
-
+		map<int, set<int>> tree;	
 		treeFromPruefer(tree, n, pruefer);
-		
 		addIfGraceful(tree, n, gLabels);
-		
-		if(!permutePruefer(pruefer, n))
-			break;
 	}
+	while (permutePruefer(pruefer, n));
 
 	cout << "num vertices: " << n << endl;
-	cout << "num trees:    " << pow(n, n-2) << endl;
+	cout << "num labelled trees:    " << pow(n, n-2) << endl;
 	cout << "num g-labels: " << gLabels.size() << endl;
-	
+
 	return 0;
 }
