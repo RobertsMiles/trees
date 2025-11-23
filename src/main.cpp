@@ -5,7 +5,7 @@ using namespace std;
 const int N = 32;
 
 
-void addIfGraceful(map<int, set<int>> & tree, int n, set<set<set<int>>> & gLabels)
+void addIfGraceful(vector<pair<int, int>> & tree, int n, set<set<set<int>>> & gLabels)
 {	
 	int i, vertexA;
 	bool graceful;
@@ -20,35 +20,25 @@ void addIfGraceful(map<int, set<int>> & tree, int n, set<set<set<int>>> & gLabel
 
 	// traverse tree
 	graceful = true;
-	for (auto pair : tree)
+	for (auto edge : tree)
 	{
-		vertexA = pair.first;
-		for (auto vertexB : pair.second)
+		if (diff[get<1>(edge) - get<0>(edge)])
 		{
-			if (diff[vertexB - vertexA])
-			{
-				graceful = false;
-				break;
-			}
-			diff[vertexB - vertexA] = true;
-		}
-		if (!graceful)
+			graceful = false;
 			break;
+		}
+		diff[get<1>(edge) - get<0>(edge)] = true;
 	}
 
 	if (graceful)
 	{
 		set<set<int>> gLabel;
-		for (auto pair : tree)
+		for (auto edge : tree)
 		{
-			vertexA = pair.first;
-			for (auto vertexB : pair.second)
-			{
-				set<int> pair;
-				pair.insert(vertexA);
-				pair.insert(vertexB);
-				gLabel.insert(move(pair));
-			}
+			set<int> pair;
+			pair.insert(get<0>(edge));
+			pair.insert(get<1>(edge));
+			gLabel.insert(move(pair));
 		}
 		gLabels.insert(move(gLabel));
 	}
@@ -137,8 +127,8 @@ void generateLabels(bool tree[N][N], int n, set<set<set<int>>> &gLabels)
 	}
 }
 
-// i've elected for the code to range from [0,n-1] rather than [1,n]
-void treeFromPruefer(map<int, set<int>> & tree, int n, int pruefer[])
+// i've elected for the pruefer code to range from [0,n-1] rather than [1,n]
+void treeFromPruefer(vector<pair<int, int>> & tree, int n, int pruefer[])
 {
 	int i, j, k, last;
 	bool valid;
@@ -169,9 +159,9 @@ void treeFromPruefer(map<int, set<int>> & tree, int n, int pruefer[])
 			if (valid)
 			{
 				if (pruefer[i] > j)
-					tree[j].insert(pruefer[i]);
+					tree.emplace_back(j, pruefer[i]);
 				else
-					tree[pruefer[i]].insert(j);
+					tree.emplace_back(pruefer[i], j);
 				label[j] = false;
 				break;
 			}
@@ -188,7 +178,7 @@ void treeFromPruefer(map<int, set<int>> & tree, int n, int pruefer[])
 				last = j;
 			else
 			{
-				tree[last].insert(j);
+				tree.emplace_back(last, j);
 				break;
 			}
 		}
@@ -240,22 +230,30 @@ bool permutePruefer(int *pruefer, int n)
 
 int main(int argc, char **argv)
 {
-	int n;
-	set<set<set<int>>> gLabels;
-	
 	// user gives number of vertices (n)
 	if (argc != 2)
 	{
 		cout << "please enter number of vertices" << endl;
 		exit(1);
 	}
-	n = atoi(argv[1]); // len pruefer + 2; must be less/equal to N
+	int n = atoi(argv[1]); // len pruefer + 2; must be less/equal to N
 	
+	vector<pair<int, int>> tree;
+	tree.reserve(n);
+
 	int pruefer[n-2] = {0};
+	set<set<set<int>>> gLabels;
+	
 	do
 	{
-		map<int, set<int>> tree;	
+		tree.clear();
+		
 		treeFromPruefer(tree, n, pruefer);
+		
+		//for (auto pair : tree)
+		//	cout << get<0>(pair) << "-" << get<1>(pair) << " ";
+		//cout << endl;
+		
 		addIfGraceful(tree, n, gLabels);
 	}
 	while (permutePruefer(pruefer, n));
